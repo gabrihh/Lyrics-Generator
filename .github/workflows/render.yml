@@ -39,6 +39,8 @@ jobs:
       - name: Transcribe with Groq
         id: transcribe
         env:
+          TITLE: ${{ inputs.title }}
+          AUTHOR: ${{ inputs.author }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
           # Script Node.js que chama Groq e salva os dados em um arquivo JSON
