@@ -68,7 +68,7 @@ jobs:
       - name: Render
         run: |
           # Lê o JSON e passa como props (usando jq para escapar corretamente)
-          npx remotion render MyVideo out/video.mp4 --props="{
+          npx remotion render index.tsx MyVideo out/video.mp4 --props="{
             \"title\": \"${{ inputs.title }}\",
             \"author\": \"${{ inputs.author }}\",
             \"backgroundColor\": \"${{ inputs.background_color }}\",
