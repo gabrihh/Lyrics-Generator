@@ -1,0 +1,80 @@
+name: Render Lyrics with Groq
+
+on:
+  workflow_dispatch:
+    inputs:
+      audio_url:
+        description: 'Audio URL (mp3)'
+        required: true
+      title:
+        description: 'Song title'
+        required: true
+      author:
+        description: 'Artist / Author'
+        required: true
+      background_color:
+        description: 'Background color (hex, optional)'
+        required: false
+        default: '#0a0a2e'
+      logo_url:
+        description: 'Logo URL (optional)'
+        required: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Download Audio
+        run: curl -L -o input.mp3 "${{ inputs.audio_url }}"
+
+      - name: Install dependencies
+        run: npm i
+
+      - name: Transcribe with Groq
+        id: transcribe
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          # Script Node.js que chama Groq e salva os dados em um arquivo JSON
+          node -e "
+          const Groq = require('groq-sdk');
+          const fs = require('fs');
+          
+          const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+          
+          (async () => {
+            const transcription = await groq.audio.transcriptions.create({
+              file: fs.createReadStream('input.mp3'),
+              model: 'whisper-large-v3-turbo',
+              response_format: 'verbose_json',
+              timestamp_granularities: ['segment'],
+            });
+            
+            // Salva o resultado da transcrição em um JSON
+            fs.writeFileSync('lyrics.json', JSON.stringify(transcription));
+            console.log('Transcription complete.');
+          })();
+          "
+
+      - name: Render
+        run: |
+          # Lê o JSON e passa como props (usando jq para escapar corretamente)
+          npx remotion render MyVideo out/video.mp4 --props="{
+            \"title\": \"${{ inputs.title }}\",
+            \"author\": \"${{ inputs.author }}\",
+            \"backgroundColor\": \"${{ inputs.background_color }}\",
+            \"logoUrl\": \"${{ inputs.logo_url }}\",
+            \"lyrics\": $(cat lyrics.json | jq -c .)
+          }"
+
+      - name: Upload Video
+        uses: actions/upload-artifact@v4
+        with:
+          name: video
+          path: out/video.mp4
