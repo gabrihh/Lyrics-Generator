@@ -62,12 +62,12 @@ jobs:
           (async () => {
             const transcription = await groq.audio.transcriptions.create({
               file: fs.createReadStream('input.mp3'),
-              model: 'whisper-large-v3',
+              model: 'whisper-large-v3-turbo',
               response_format: 'verbose_json',
               timestamp_granularities: ['segment'],
               language: \`"\${process.env.LANGUAGE}"\`,
               temperature: 0,
-              prompt: \`Esta é uma transcrição de uma música chamada "\${process.env.TITLE}" do artista "\${process.env.AUTHOR}". Transcreva a letra exata, mantendo as quebras de linha e a pontuação natural. Letra completa e correta: "\${process.env.LYRIC}"\`
+              prompt: \`Esta é uma música chamada "\${process.env.TITLE}". Transcreva a letra exata, mantendo as quebras de linha e a pontuação natural (melhore a pontuação se necessário). Letra completa e correta ("\n" significa pular linha): "\${process.env.LYRIC}"\`
             });
             
             // Salva o resultado da transcrição em um JSON
