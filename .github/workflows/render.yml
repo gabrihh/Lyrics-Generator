@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       audio_url:
-        description: 'Audio URL (mp3)'
+        description: 'Audio URL (MP3)'
         required: true
       title:
         description: 'Song title'
@@ -14,13 +14,17 @@ on:
         required: true
       language:
         description: 'Language (optional)'
-        required: true
+        required: false
+        default: 'en'
       background_color:
-        description: 'Background color (hex, optional)'
+        description: 'Background color (hex)'
         required: true
         default: '#0a0a2e'
       logo_url:
         description: 'Logo URL (optional)'
+        required: false
+      lyric:
+        description: 'Lyric Example'
         required: false
 
 jobs:
