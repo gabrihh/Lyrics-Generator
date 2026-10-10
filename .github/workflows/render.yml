@@ -49,6 +49,7 @@ jobs:
           TITLE: ${{ inputs.title }}
           AUTHOR: ${{ inputs.author }}
           LANGUAGE: ${{ inputs.language }}
+          LYRIC: ${{ inputs.lyric }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
           # Script Node.js que chama Groq e salva os dados em um arquivo JSON
@@ -66,7 +67,7 @@ jobs:
               timestamp_granularities: ['segment'],
               language: \`"\${process.env.LANGUAGE}"\`,
               temperature: 0,
-              prompt: \`Esta é uma transcrição de uma música chamada "\${process.env.TITLE}" do artista "\${process.env.AUTHOR}". Transcreva a letra exata, mantendo as quebras de linha e a pontuação natural.\`
+              prompt: \`Esta é uma transcrição de uma música chamada "\${process.env.TITLE}" do artista "\${process.env.AUTHOR}". Transcreva a letra exata, mantendo as quebras de linha e a pontuação natural. Letra completa e correta: "\{process.env.LYRIC}"\`
             });
             
             // Salva o resultado da transcrição em um JSON
