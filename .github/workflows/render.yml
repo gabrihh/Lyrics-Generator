@@ -24,7 +24,7 @@ on:
         description: 'Logo URL (optional)'
         required: false
       lyric:
-        description: 'Lyric Example'
+        description: 'Lyric Example (use \n for line breaks)'
         required: false
 
 jobs:
