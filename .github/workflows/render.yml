@@ -62,7 +62,7 @@ jobs:
           (async () => {
             const transcription = await groq.audio.transcriptions.create({
               file: fs.createReadStream('input.mp3'),
-              model: 'whisper-large-v3-turbo',
+              model: 'whisper-large-v3',
               response_format: 'verbose_json',
               timestamp_granularities: ['segment'],
               language: \`"\${process.env.LANGUAGE}"\`,
