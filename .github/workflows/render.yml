@@ -62,6 +62,9 @@ jobs:
           })();
           "
 
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
       - name: Render
         run: |
           # Lê o JSON e passa como props (usando jq para escapar corretamente)
