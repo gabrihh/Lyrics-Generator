@@ -67,7 +67,7 @@ jobs:
               timestamp_granularities: ['segment'],
               language: \`"\${process.env.LANGUAGE}"\`,
               temperature: 0,
-              prompt: \`Esta é uma transcrição de uma música chamada "\${process.env.TITLE}" do artista "\${process.env.AUTHOR}". Transcreva a letra exata, mantendo as quebras de linha e a pontuação natural. Letra completa e correta: "\{process.env.LYRIC}"\`
+              prompt: \`Esta é uma transcrição de uma música chamada "\${process.env.TITLE}" do artista "\${process.env.AUTHOR}". Transcreva a letra exata, mantendo as quebras de linha e a pontuação natural. Letra completa e correta: "\${process.env.LYRIC}"\`
             });
             
             // Salva o resultado da transcrição em um JSON
