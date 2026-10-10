@@ -56,7 +56,7 @@ jobs:
               model: 'whisper-large-v3-turbo',
               response_format: 'verbose_json',
               timestamp_granularities: ['segment'],
-              prompt: \`Esta é uma transcrição de uma música chamada "\${title}" do artista "\${author}". Transcreva a letra exata, mantendo as quebras de linha e a pontuação natural.\`
+              prompt: \`Esta é uma transcrição de uma música chamada "\${process.env.TITLE}" do artista "\${process.env.AUTHOR}". Transcreva a letra exata, mantendo as quebras de linha e a pontuação natural.\`
             });
             
             // Salva o resultado da transcrição em um JSON
