@@ -67,7 +67,7 @@ jobs:
               timestamp_granularities: ['segment'],
               language: \`"\${process.env.LANGUAGE}"\`,
               temperature: 0,
-              prompt: \`Esta é uma música chamada "\${process.env.TITLE}". Transcreva a letra exata, mantendo as quebras de linha e a pontuação natural, melhore a pontuação se necessário. Letra completa e correta, "\n" significa pular linha (SIGA RIGIDAMENTE): "\${process.env.LYRIC}"\`
+              prompt: \`Esta música é chamada "\${process.env.TITLE}". Transcreva exata, mantendo as quebras de linha e a pontuação natural. Letra correta, "\n" significa pular linha e 2x (se houver) significa bloco repetido (SIGA RIGIDAMENTE): "\${process.env.LYRIC}"\`
             });
             
             // Salva o resultado da transcrição em um JSON
