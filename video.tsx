@@ -8,6 +8,7 @@ const { fontFamily } = loadFont('normal', {
 
 const SAFE = 60;
 const FADE_DURATION = 0.4;
+const MAX_FUTURE_LINES = 4;
 
 type LyricsSegment = {
   start: number;
@@ -55,9 +56,9 @@ export const MyVideo = ({ title, author, backgroundColor, logoUrl, lyrics }: Pro
         )
     : 0;
 
-  const activeScale = interpolate(activeProgress, [0, 1], [1.15, 1]);
+  const activeScale = interpolate(activeProgress, [0, 1], [1.08, 1]);
   const activeOpacity = activeProgress;
-  const activeBlur = interpolate(activeProgress, [0, 1], [6, 0]);
+  const activeBlur = interpolate(activeProgress, [0, 1], [4, 0]);
 
   return (
     <AbsoluteFill style={{ backgroundColor: backgroundColor || '#0a0a2e', fontFamily }}>
@@ -78,10 +79,13 @@ export const MyVideo = ({ title, author, backgroundColor, logoUrl, lyrics }: Pro
 
       <AbsoluteFill
         style={{
-          justifyContent: 'flex-end',
+          justifyContent: 'flex-start',
           alignItems: 'flex-start',
-          padding: SAFE,
-          paddingBottom: SAFE * 2,
+          paddingLeft: SAFE,
+          paddingRight: SAFE,
+          paddingTop: SAFE * 5,
+          paddingBottom: SAFE,
+          overflow: 'hidden',
         }}
       >
         {lyrics.segments.map((segment, index) => {
@@ -91,9 +95,10 @@ export const MyVideo = ({ title, author, backgroundColor, logoUrl, lyrics }: Pro
           const isFuture = index > activeIndex;
 
           if (isPast) return null;
+          if (isFuture && distance > MAX_FUTURE_LINES) return null;
 
           let opacity = 0.25;
-          let fontSize = 44;
+          let fontSize = 28;
           let color = '#aaa';
           let fontWeight = 400;
           let scale = 1;
@@ -102,19 +107,19 @@ export const MyVideo = ({ title, author, backgroundColor, logoUrl, lyrics }: Pro
 
           if (isActive) {
             opacity = activeOpacity;
-            fontSize = 64;
+            fontSize = 40;
             color = '#fff';
             fontWeight = 700;
             scale = activeScale;
             blur = activeBlur;
-            translateX = interpolate(activeProgress, [0, 1], [20, 0], {
+            translateX = interpolate(activeProgress, [0, 1], [16, 0], {
               extrapolateLeft: 'clamp',
               extrapolateRight: 'clamp',
               easing: Easing.out(Easing.cubic),
             });
           } else if (isFuture) {
-            opacity = Math.max(0.15, 0.6 - distance * 0.12);
-            fontSize = 44;
+            opacity = Math.max(0.15, 0.5 - distance * 0.1);
+            fontSize = 28;
             color = '#aaa';
             fontWeight = 400;
 
@@ -126,10 +131,12 @@ export const MyVideo = ({ title, author, backgroundColor, logoUrl, lyrics }: Pro
               { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
             );
 
-            fontSize = interpolate(approachProgress, [0, 1], [44, 52]);
-            opacity = interpolate(approachProgress, [0, 1], [opacity, 0.8]);
-            translateX = interpolate(approachProgress, [0, 1], [0, -8]);
+            fontSize = interpolate(approachProgress, [0, 1], [28, 34]);
+            opacity = interpolate(approachProgress, [0, 1], [opacity, 0.7]);
+            translateX = interpolate(approachProgress, [0, 1], [0, -6]);
           }
+
+          if (opacity <= 0.01) return null;
 
           return (
             <div
@@ -139,8 +146,10 @@ export const MyVideo = ({ title, author, backgroundColor, logoUrl, lyrics }: Pro
                 fontSize,
                 fontWeight,
                 color,
-                marginBottom: 16,
+                marginBottom: 12,
                 lineHeight: 1.2,
+                maxWidth: '100%',
+                wordWrap: 'break-word',
                 transform: `scale(${scale}) translateX(${translateX}px)`,
                 transformOrigin: 'left center',
                 filter: blur > 0 ? `blur(${blur}px)` : 'none',
