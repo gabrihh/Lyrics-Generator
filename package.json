@@ -5,6 +5,7 @@
     "render": "remotion render"
   },
   "dependencies": {
+    "@remotion/google-fonts": "4.0.532",
     "@remotion/cli": "4.0.532",
     "groq-sdk": "1.6.0",
     "react": "19.2.8",
