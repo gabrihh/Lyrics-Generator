@@ -121,8 +121,8 @@ export const MyVideo = ({ title, author, backgroundColor, logoUrl, lyrics }: Pro
             const timeUntilActive = segment.start - currentTime;
             const approachProgress = interpolate(
               timeUntilActive,
-              [1.5, 0],
-              [0, 1],
+              [0, 1.5],
+              [1, 0],
               { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
             );
 
