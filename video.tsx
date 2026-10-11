@@ -60,9 +60,12 @@ export const MyVideo = ({ title, author, backgroundColor, logoUrl, lyrics }: Pro
   const activeScale = interpolate(activeProgress, [0, 1], [1.05, 1]);
   const activeOpacity = activeProgress;
   const activeBlur = interpolate(activeProgress, [0, 1], [3, 0]);
+  const activeTranslateY = interpolate(activeProgress, [0, 1], [20, 0]);
+
+  const bgColor = backgroundColor || '#0a0a2e';
 
   return (
-    <AbsoluteFill style={{ backgroundColor: backgroundColor || '#0a0a2e', fontFamily }}>
+    <AbsoluteFill style={{ backgroundColor: bgColor, fontFamily }}>
       <AbsoluteFill
         style={{
           justifyContent: 'flex-start',
@@ -73,21 +76,38 @@ export const MyVideo = ({ title, author, backgroundColor, logoUrl, lyrics }: Pro
           paddingBottom: SAFE,
         }}
       >
-        <p style={{ color: '#fff', fontSize: 36, fontWeight: 700, margin: 0 }}>
+        <p
+          style={{
+            color: '#fff',
+            fontSize: 36,
+            fontWeight: 700,
+            margin: 0,
+            letterSpacing: -0.5,
+            textShadow: '0 2px 12px rgba(0,0,0,0.6)',
+          }}
+        >
           {title}
         </p>
-        <p style={{ color: '#aaa', fontSize: 28, fontWeight: 400, margin: 0 }}>
+        <p
+          style={{
+            color: '#aaa',
+            fontSize: 28,
+            fontWeight: 400,
+            margin: 0,
+            letterSpacing: 0.3,
+            textShadow: '0 2px 10px rgba(0,0,0,0.5)',
+          }}
+        >
           {author}
         </p>
 
-        <div style={{ marginTop: SAFE * 2, width: '100%' }}>
+        <div style={{ marginTop: SAFE * 2, width: '100%', position: 'relative' }}>
           {lyrics.segments.map((segment, index) => {
             const distance = index - activeIndex;
             const isPast = index < activeIndex;
             const isActive = index === activeIndex;
             const isFuture = index > activeIndex;
 
-            if (isPast) return null;
             if (isFuture && distance > MAX_FUTURE_LINES) return null;
 
             let opacity = 0.25;
@@ -97,8 +117,31 @@ export const MyVideo = ({ title, author, backgroundColor, logoUrl, lyrics }: Pro
             let scale = 1;
             let blur = 0;
             let translateX = 0;
+            let translateY = 0;
+            let textShadow = '0 2px 16px rgba(0,0,0,0.7)';
+            let transform3d = '';
 
-            if (isActive) {
+            if (isPast) {
+              const timeSinceEnd = currentTime - segment.end;
+              const exitProgress = interpolate(
+                timeSinceEnd,
+                [0, FADE_DURATION],
+                [0, 1],
+                { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.in(Easing.cubic) }
+              );
+
+              opacity = interpolate(exitProgress, [0, 1], [1, 0]);
+              translateY = interpolate(exitProgress, [0, 1], [0, -80]);
+              blur = interpolate(exitProgress, [0, 1], [0, 6]);
+              fontSize = 40;
+              color = '#fff';
+              fontWeight = 700;
+              textShadow = `
+                0 2px 0 rgba(0,0,0,0.4),
+                0 4px 8px rgba(0,0,0,0.5),
+                0 8px 24px rgba(0,0,0,0.4)
+              `;
+            } else if (isActive) {
               opacity = activeOpacity;
               fontSize = 40;
               color = '#fff';
@@ -110,11 +153,21 @@ export const MyVideo = ({ title, author, backgroundColor, logoUrl, lyrics }: Pro
                 extrapolateRight: 'clamp',
                 easing: Easing.out(Easing.cubic),
               });
+              translateY = activeTranslateY;
+              textShadow = `
+                0 1px 0 rgba(0,0,0,0.3),
+                0 2px 0 rgba(0,0,0,0.4),
+                0 3px 0 rgba(0,0,0,0.3),
+                0 6px 12px rgba(0,0,0,0.6),
+                0 12px 28px rgba(0,0,0,0.5)
+              `;
+              transform3d = 'perspective(800px) rotateX(2deg)';
             } else if (isFuture) {
               opacity = Math.max(0.15, 0.5 - distance * 0.1);
               fontSize = 28;
               color = '#aaa';
               fontWeight = 400;
+              textShadow = '0 1px 4px rgba(0,0,0,0.5)';
 
               const timeUntilActive = segment.start - currentTime;
               const approachProgress = interpolate(
@@ -143,9 +196,11 @@ export const MyVideo = ({ title, author, backgroundColor, logoUrl, lyrics }: Pro
                   lineHeight: 1.25,
                   maxWidth: '100%',
                   wordWrap: 'break-word',
-                  transform: `scale(${scale}) translateX(${translateX}px)`,
+                  transform: `${transform3d} scale(${scale}) translate(${translateX}px, ${translateY}px)`,
                   transformOrigin: 'left center',
                   filter: blur > 0 ? `blur(${blur}px)` : 'none',
+                  textShadow,
+                  willChange: 'transform, opacity',
                 }}
               >
                 {segment.text}
@@ -155,18 +210,51 @@ export const MyVideo = ({ title, author, backgroundColor, logoUrl, lyrics }: Pro
         </div>
       </AbsoluteFill>
 
+      <AbsoluteFill
+        style={{
+          top: 0,
+          height: TOP_OFFSET + 80,
+          background: `linear-gradient(to bottom, transparent 0%, transparent ${TOP_OFFSET - 60}px, ${bgColor} ${TOP_OFFSET + 80}px)`,
+          pointerEvents: 'none',
+        }}
+      />
+
+      <AbsoluteFill
+        style={{
+          bottom: 0,
+          height: SAFE * 4,
+          background: `linear-gradient(to top, ${bgColor} 0%, transparent 100%)`,
+          pointerEvents: 'none',
+        }}
+      />
+
       {logoUrl && (
-        <Img
-          src={logoUrl}
+        <div
           style={{
             position: 'absolute',
             bottom: SAFE * 3,
             right: SAFE,
             width: 120,
             height: 120,
-            objectFit: 'contain',
+            borderRadius: 12,
+            overflow: 'hidden',
+            backgroundColor: 'rgba(255,255,255,0.05)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))',
           }}
-        />
+        >
+          <Img
+            src={logoUrl}
+            style={{
+              width: '80%',
+              height: '80%',
+              objectFit: 'contain',
+            }}
+          />
+        </div>
       )}
     </AbsoluteFill>
   );
