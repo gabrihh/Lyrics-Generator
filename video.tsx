@@ -7,7 +7,7 @@ const { fontFamily } = loadFont('normal', {
 });
 
 const SAFE = 60;
-const TOP_OFFSET = SAFE * 2;
+const TOP_OFFSET = SAFE * 4;
 const FADE_DURATION = 0.6;
 const MAX_FUTURE_LINES = 4;
 
@@ -80,7 +80,7 @@ export const MyVideo = ({ title, author, backgroundColor, logoUrl, lyrics }: Pro
           {author}
         </p>
 
-        <div style={{ marginTop: SAFE * 3, width: '100%' }}>
+        <div style={{ marginTop: SAFE * 2, width: '100%' }}>
           {lyrics.segments.map((segment, index) => {
             const distance = index - activeIndex;
             const isPast = index < activeIndex;
