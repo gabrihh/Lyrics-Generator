@@ -160,7 +160,7 @@ export const MyVideo = ({ title, author, backgroundColor, logoUrl, lyrics }: Pro
           src={logoUrl}
           style={{
             position: 'absolute',
-            bottom: SAFE,
+            bottom: SAFE * 3,
             right: SAFE,
             width: 120,
             height: 120,
