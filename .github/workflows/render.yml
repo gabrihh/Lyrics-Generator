@@ -1,170 +1,100 @@
-import { AbsoluteFill, Img, useVideoConfig, useCurrentFrame, interpolate, Easing } from 'remotion';
-import { loadFont } from '@remotion/google-fonts/Inter';
+name: Render Lyrics with Groq
 
-const { fontFamily } = loadFont('normal', {
-  weights: ['400', '700'],
-  subsets: ['latin'],
-});
+on:
+  workflow_dispatch:
+    inputs:
+      audio_url:
+        description: 'Audio URL (MP3)'
+        required: true
+      title:
+        description: 'Song title'
+        required: true
+      author:
+        description: 'Artist / Author'
+        required: true
+      language:
+        description: 'Language (optional)'
+        required: false
+        default: 'en'
+      background_color:
+        description: 'Background color (hex)'
+        required: true
+        default: '#0a0a2e'
+      logo_url:
+        description: 'Logo URL (optional)'
+        required: false
+      lyric:
+        description: 'Lyric Example (use \n for line breaks)'
+        required: false
 
-const SAFE = 60;
-const FADE_DURATION = 0.4;
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-type LyricsSegment = {
-  start: number;
-  end: number;
-  text: string;
-};
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
-type Props = {
-  title: string;
-  author: string;
-  backgroundColor?: string;
-  logoUrl?: string;
-  lyrics: { segments: LyricsSegment[] };
-};
+      - name: Download Audio
+        run: curl -L -o input.mp3 "${{ inputs.audio_url }}"
 
-export const MyVideo = ({ title, author, backgroundColor, logoUrl, lyrics }: Props) => {
-  const { fps } = useVideoConfig();
-  const frame = useCurrentFrame();
+      - name: Install dependencies
+        run: npm i
 
-  const currentTime = frame / fps;
-
-  const activeIndex = lyrics.segments.findIndex(
-    (seg) => currentTime >= seg.start && currentTime < seg.end
-  );
-
-  const currentSegment = lyrics.segments[activeIndex];
-
-  const isNearEnd = currentSegment
-    ? currentTime > currentSegment.end - FADE_DURATION
-    : false;
-
-  const activeProgress = currentSegment
-    ? isNearEnd
-      ? interpolate(
-          currentTime,
-          [currentSegment.end - FADE_DURATION, currentSegment.end],
-          [1, 0],
-          { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.out(Easing.quad) }
-        )
-      : interpolate(
-          currentTime,
-          [currentSegment.start, currentSegment.start + FADE_DURATION],
-          [0, 1],
-          { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.out(Easing.quad) }
-        )
-    : 0;
-
-  const activeScale = interpolate(activeProgress, [0, 1], [1.15, 1]);
-  const activeOpacity = activeProgress;
-  const activeBlur = interpolate(activeProgress, [0, 1], [6, 0]);
-
-  return (
-    <AbsoluteFill style={{ backgroundColor: backgroundColor || '#0a0a2e', fontFamily }}>
-      <AbsoluteFill
-        style={{
-          justifyContent: 'flex-start',
-          alignItems: 'flex-start',
-          padding: SAFE,
-        }}
-      >
-        <p style={{ color: '#fff', fontSize: 36, fontWeight: 700, margin: 0 }}>
-          {title}
-        </p>
-        <p style={{ color: '#aaa', fontSize: 28, fontWeight: 400, margin: 0 }}>
-          {author}
-        </p>
-      </AbsoluteFill>
-
-      <AbsoluteFill
-        style={{
-          justifyContent: 'flex-end',
-          alignItems: 'flex-start',
-          padding: SAFE,
-          paddingBottom: SAFE * 2,
-        }}
-      >
-        {lyrics.segments.map((segment, index) => {
-          const distance = index - activeIndex;
-          const isPast = index < activeIndex;
-          const isActive = index === activeIndex;
-          const isFuture = index > activeIndex;
-
-          if (isPast) return null;
-
-          let opacity = 0.25;
-          let fontSize = 44;
-          let color = '#aaa';
-          let fontWeight = 400;
-          let scale = 1;
-          let blur = 0;
-          let translateX = 0;
-
-          if (isActive) {
-            opacity = activeOpacity;
-            fontSize = 64;
-            color = '#fff';
-            fontWeight = 700;
-            scale = activeScale;
-            blur = activeBlur;
-            translateX = interpolate(activeProgress, [0, 1], [20, 0], {
-              extrapolateLeft: 'clamp',
-              extrapolateRight: 'clamp',
-              easing: Easing.out(Easing.cubic),
+      - name: Transcribe with Groq
+        id: transcribe
+        env:
+          TITLE: ${{ inputs.title }}
+          AUTHOR: ${{ inputs.author }}
+          LANGUAGE: ${{ inputs.language }}
+          LYRIC: ${{ inputs.lyric }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          # Script Node.js que chama Groq e salva os dados em um arquivo JSON
+          node -e "
+          const Groq = require('groq-sdk');
+          const fs = require('fs');
+          
+          const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+          
+          (async () => {
+            const transcription = await groq.audio.transcriptions.create({
+              file: fs.createReadStream('input.mp3'),
+              model: 'whisper-large-v3',
+              response_format: 'verbose_json',
+              timestamp_granularities: ['segment'],
+              language: \`"\${process.env.LANGUAGE}"\`,
+              temperature: 0,
+              prompt: \`Esta é uma música chamada "\${process.env.TITLE}". Transcreva a letra exata, mantendo as quebras de linha e a pontuação natural, melhore a pontuação se necessário. Letra completa e correta, "\n" significa pular linha (SIGA RIGIDAMENTE): "\${process.env.LYRIC}"\`
             });
-          } else if (isFuture) {
-            opacity = Math.max(0.15, 0.6 - distance * 0.12);
-            fontSize = 44;
-            color = '#aaa';
-            fontWeight = 400;
+            
+            // Salva o resultado da transcrição em um JSON
+            fs.writeFileSync('lyrics.json', JSON.stringify({
+              ...transcription,
+              duration: transcription.duration
+            }));
+            console.log('Transcription complete.');
+          })();
+          "
 
-            const timeUntilActive = segment.start - currentTime;
-            const approachProgress = interpolate(
-              timeUntilActive,
-              [0, 1.5],
-              [1, 0],
-              { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-            );
+      - name: Install jq
+        run: sudo apt-get install -y jq
 
-            fontSize = interpolate(approachProgress, [0, 1], [44, 52]);
-            opacity = interpolate(approachProgress, [0, 1], [opacity, 0.8]);
-            translateX = interpolate(approachProgress, [0, 1], [0, -8]);
-          }
+      - name: Render
+        run: |
+          # Lê o JSON e passa como props (usando jq para escapar corretamente)
+          npx remotion render index.tsx MyVideo out/video.mp4 --props="{
+            \"title\": \"${{ inputs.title }}\",
+            \"author\": \"${{ inputs.author }}\",
+            \"backgroundColor\": \"${{ inputs.background_color }}\",
+            \"logoUrl\": \"${{ inputs.logo_url }}\",
+            \"lyrics\": $(cat lyrics.json | jq -c .)
+          }"
 
-          return (
-            <div
-              key={index}
-              style={{
-                opacity,
-                fontSize,
-                fontWeight,
-                color,
-                marginBottom: 16,
-                lineHeight: 1.2,
-                transform: `scale(${scale}) translateX(${translateX}px)`,
-                transformOrigin: 'left center',
-                filter: blur > 0 ? `blur(${blur}px)` : 'none',
-              }}
-            >
-              {segment.text}
-            </div>
-          );
-        })}
-      </AbsoluteFill>
-
-      {logoUrl && (
-        <Img
-          src={logoUrl}
-          style={{
-            position: 'absolute',
-            bottom: SAFE,
-            right: SAFE,
-            width: 120,
-            height: 120,
-            objectFit: 'contain',
-          }}
-        />
-      )}
-    </AbsoluteFill>
-  );
-};
+      - name: Upload Video
+        uses: actions/upload-artifact@v4
+        with:
+          name: video
+          path: out/video.mp4
