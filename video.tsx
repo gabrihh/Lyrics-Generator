@@ -49,7 +49,7 @@ export const MyVideo = ({ title, author, backgroundColor, logoUrl, lyrics }: Pro
           currentTime,
           [currentSegment.end - FADE_DURATION, currentSegment.end],
           [1, 0],
-          { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.inOut(Easing.cubic) }
+          { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.in(Easing.cubic) }
         )
       : interpolate(
           currentTime,
@@ -62,7 +62,18 @@ export const MyVideo = ({ title, author, backgroundColor, logoUrl, lyrics }: Pro
   const activeScale = interpolate(activeProgress, [0, 1], [1.05, 1]);
   const activeOpacity = activeProgress;
   const activeBlur = interpolate(activeProgress, [0, 1], [3, 0]);
-  const activeTranslateY = interpolate(activeProgress, [0, 1], [20 * SCALE, 0]);
+
+  // translateY só na ENTRADA (0.6s iniciais do segmento)
+  const entryProgress = currentSegment
+    ? interpolate(
+        currentTime,
+        [currentSegment.start, currentSegment.start + FADE_DURATION],
+        [0, 1],
+        { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) }
+      )
+    : 0;
+
+  const activeTranslateY = interpolate(entryProgress, [0, 1], [20 * SCALE, 0]);
 
   const bgColor = backgroundColor || '#0a0a2e';
 
@@ -150,7 +161,7 @@ export const MyVideo = ({ title, author, backgroundColor, logoUrl, lyrics }: Pro
               fontWeight = 700;
               scale = activeScale;
               blur = activeBlur;
-              translateX = interpolate(activeProgress, [0, 1], [12 * SCALE, 0], {
+              translateX = interpolate(entryProgress, [0, 1], [12 * SCALE, 0], {
                 extrapolateLeft: 'clamp',
                 extrapolateRight: 'clamp',
                 easing: Easing.out(Easing.cubic),
@@ -211,15 +222,6 @@ export const MyVideo = ({ title, author, backgroundColor, logoUrl, lyrics }: Pro
           })}
         </div>
       </AbsoluteFill>
-
-      <AbsoluteFill
-        style={{
-          top: 0,
-          height: TOP_OFFSET + 80 * SCALE,
-          background: `linear-gradient(to bottom, transparent 0%, transparent ${TOP_OFFSET - 60 * SCALE}px, ${bgColor} ${TOP_OFFSET + 80 * SCALE}px)`,
-          pointerEvents: 'none',
-        }}
-      />
 
       <AbsoluteFill
         style={{
