@@ -18,8 +18,8 @@ const calculateMetadata: CalculateMetadataFunction<Props> = ({ props }) => {
   return {
     durationInFrames: Math.ceil(durationInSeconds * fps),
     fps,
-    width: 720,
-    height: 1280,
+    width: 1080,
+    height: 1920,
   };
 };
 
