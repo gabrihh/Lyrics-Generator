@@ -39,31 +39,6 @@ export const MyVideo = ({ title, author, backgroundColor, logoUrl, lyrics }: Pro
 
   const currentSegment = lyrics.segments[activeIndex];
 
-  const isNearEnd = currentSegment
-    ? currentTime > currentSegment.end - FADE_DURATION
-    : false;
-
-  const activeProgress = currentSegment
-    ? isNearEnd
-      ? interpolate(
-          currentTime,
-          [currentSegment.end - FADE_DURATION, currentSegment.end],
-          [1, 0],
-          { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.in(Easing.cubic) }
-        )
-      : interpolate(
-          currentTime,
-          [currentSegment.start, currentSegment.start + FADE_DURATION],
-          [0, 1],
-          { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) }
-        )
-    : 0;
-
-  const activeScale = interpolate(activeProgress, [0, 1], [1.05, 1]);
-  const activeOpacity = activeProgress;
-  const activeBlur = interpolate(activeProgress, [0, 1], [3, 0]);
-
-  // translateY só na ENTRADA (0.6s iniciais do segmento)
   const entryProgress = currentSegment
     ? interpolate(
         currentTime,
@@ -73,6 +48,9 @@ export const MyVideo = ({ title, author, backgroundColor, logoUrl, lyrics }: Pro
       )
     : 0;
 
+  const activeScale = interpolate(entryProgress, [0, 1], [1.05, 1]);
+  const activeOpacity = entryProgress;
+  const activeBlur = interpolate(entryProgress, [0, 1], [3, 0]);
   const activeTranslateY = interpolate(entryProgress, [0, 1], [20 * SCALE, 0]);
 
   const bgColor = backgroundColor || '#0a0a2e';
