@@ -5,7 +5,7 @@ Lyrics Generator with **Remotion** and **GroqCloud Whisper API**<br>
 ## Quick Start
 • Go to the [Actions](https://github.com/gabrihh/Lyrics-Generator/actions/workflows/render.yml) tab.<br>
 • Click on **"Run workflow"**.<br>
-• Define the following inputs:<br>
+**• Define the following inputs:** <br>
 **Audio URL (.mp3)** - Your music at URL<br>
 **Song title** - The song title will appear in the top left corner.<br>
 **Artist / Author** - The author of the song will appear below the title.<br>
