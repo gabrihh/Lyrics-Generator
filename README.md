@@ -32,7 +32,7 @@ You provide the audio and a few details — the workflow handles the rest: AI tr
 | 📝 **Song title** | Title shown in the top-left corner | ✅ |
 | 🎤 **Artist / Author** | Author shown below the title | ✅ |
 | 🌐 **Language** | Song language — speeds up and improves transcription | ❌ |
-| 🎨 **Background color (hex)** | Background color in hex (e.g. `#0d1117`) | ✅ |
+| 🎨 **Background color (hex)** | Background color in hex (e.g. `#0a0a2e`) | ✅ |
 | 🖼️ **Logo URL** | Logo shown in the bottom-right corner | ❌ |
 | 💡 **Lyric Example** | Snippets of the lyrics to boost AI accuracy | ❌ |
 
