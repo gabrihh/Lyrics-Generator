@@ -14,5 +14,5 @@ Lyrics Generator with **Remotion** and **GroqCloud Whisper API**<br>
 **Logo URL (optional)** - The logo will appear in the bottom right corner.<br>
 **Lyric Example** - Add snippets of music and improve the AI's accuracy.<br>
 <br>
-**&copy; 2026 GabrihhDEV.**
+**&copy; 2026 GabrihhDEV.**<br>
 **MIT LICENSE**
