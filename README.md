@@ -3,7 +3,7 @@
 > **Automatically generate synced lyric videos** from any song using **Remotion** + **GroqCloud Whisper API**.
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Remotion-0.4+-blueviolet?style=for-the-badge&logo=remotion" alt="Remotion">
+  <img src="https://img.shields.io/badge/Remotion-4.0+-blueviolet?style=for-the-badge&logo=remotion" alt="Remotion">
   <img src="https://img.shields.io/badge/Groq-Whisper_API-orange?style=for-the-badge" alt="Groq">
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT">
   <img src="https://img.shields.io/badge/Free_for_Fair_Use-✔-brightgreen?style=for-the-badge" alt="Fair Use">
